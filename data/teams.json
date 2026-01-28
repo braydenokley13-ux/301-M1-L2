@@ -26,6 +26,178 @@
       "3": "Championship or bust! Go all in on your stars.",
       "4": "Start thinking about the future. Begin reducing payroll gradually.",
       "5": "Reset time. Cut payroll significantly to rebuild cap flexibility."
+    },
+    "decisions": {
+      "1": [
+        {
+          "id": "y1_sign_star_fa",
+          "title": "Sign Star Free Agent",
+          "description": "Add a $12M/year impact player to strengthen for a title run",
+          "payrollPercentage": 92,
+          "flags": { "unlock": ["extend_star"], "lock": ["rebuild_heavy", "draft_focus"] },
+          "pathWeights": { "winNow": 25, "rebuild": -15, "hybrid": 5 }
+        },
+        {
+          "id": "y1_trade_salary",
+          "title": "Trade for Salary Cap Relief",
+          "description": "Move a role player for future flexibility",
+          "payrollPercentage": 85,
+          "flags": { "unlock": ["cap_relief", "flexibility_y2"], "lock": ["big_spender"] },
+          "pathWeights": { "winNow": 5, "rebuild": 10, "hybrid": 15 }
+        },
+        {
+          "id": "y1_extend_core",
+          "title": "Extend Your Core Stars",
+          "description": "Lock in Brunson/KAT long-term, commit to window",
+          "payrollPercentage": 90,
+          "flags": { "unlock": ["core_locked", "committed"], "lock": ["rebuild_viable"] },
+          "pathWeights": { "winNow": 20, "rebuild": -10, "hybrid": 10 }
+        },
+        {
+          "id": "y1_balanced",
+          "title": "Balanced Window Management",
+          "description": "Maintain current spending, keep some flexibility",
+          "payrollPercentage": 88,
+          "flags": { "unlock": ["flexible_y2", "moderate_path"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 8, "hybrid": 18 }
+        }
+      ],
+      "2": [
+        {
+          "id": "y2_go_allin",
+          "title": "Go All-In: Peak Spending",
+          "description": "Max payroll for championship push this year",
+          "payrollPercentage": 100,
+          "flags": { "unlock": ["championship_push", "no_flexibility"], "lock": ["rebuild_y3", "expense_management"] },
+          "pathWeights": { "winNow": 30, "rebuild": -20, "hybrid": 0 }
+        },
+        {
+          "id": "y2_maintain_spending",
+          "title": "Maintain Competitive Spending",
+          "description": "Keep payroll steady while managing cap",
+          "payrollPercentage": 88,
+          "flags": { "unlock": ["sustained_window", "flexibility_y3"], "lock": [] },
+          "pathWeights": { "winNow": 15, "rebuild": 5, "hybrid": 18 }
+        },
+        {
+          "id": "y2_reduce_early",
+          "title": "Start Payroll Reduction",
+          "description": "Begin phasing out expensive role players",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["reset_prep", "young_core_dev"], "lock": ["sustained_spending"] },
+          "pathWeights": { "winNow": -5, "rebuild": 15, "hybrid": 8 }
+        },
+        {
+          "id": "y2_strategic_add",
+          "title": "Strategic Mid-Tier Addition",
+          "description": "Add depth without maximizing payroll",
+          "payrollPercentage": 84,
+          "flags": { "unlock": ["balanced_roster", "flexible_y3"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": 8, "hybrid": 15 }
+        }
+      ],
+      "3": [
+        {
+          "id": "y3_championship_spend",
+          "title": "Championship or Bust Spending",
+          "description": "Max out payroll for final title push",
+          "payrollPercentage": 100,
+          "flags": { "unlock": ["last_window", "all_in"], "lock": ["flexibility_y4"] },
+          "pathWeights": { "winNow": 28, "rebuild": -25, "hybrid": -5 }
+        },
+        {
+          "id": "y3_maintain_peak",
+          "title": "Maintain Peak Spending",
+          "description": "Keep high payroll without maximum",
+          "payrollPercentage": 92,
+          "flags": { "unlock": ["sustained_peak", "reset_prep"], "lock": [] },
+          "pathWeights": { "winNow": 18, "rebuild": 0, "hybrid": 15 }
+        },
+        {
+          "id": "y3_begin_transition",
+          "title": "Begin Transition to Reset",
+          "description": "Start reducing to prepare for next cycle",
+          "payrollPercentage": 80,
+          "flags": { "unlock": ["reset_mode", "young_dev"], "lock": ["final_push"] },
+          "pathWeights": { "winNow": -10, "rebuild": 20, "hybrid": 10 }
+        },
+        {
+          "id": "y3_pragmatic_window",
+          "title": "Pragmatic Window Management",
+          "description": "Balance remaining window vs. future flexibility",
+          "payrollPercentage": 86,
+          "flags": { "unlock": ["balanced_reset", "flexible_y4"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 10, "hybrid": 18 }
+        }
+      ],
+      "4": [
+        {
+          "id": "y4_extend_window",
+          "title": "Extend Window One More Year",
+          "description": "Keep payroll high for final competitive push",
+          "payrollPercentage": 86,
+          "flags": { "unlock": ["extended_window"], "lock": ["hard_reset"] },
+          "pathWeights": { "winNow": 15, "rebuild": -10, "hybrid": 10 }
+        },
+        {
+          "id": "y4_manage_decline",
+          "title": "Manage Decline Responsibly",
+          "description": "Reduce payroll while staying competitive",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["soft_reset", "flexibility_y5"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 15, "hybrid": 15 }
+        },
+        {
+          "id": "y4_accelerate_reset",
+          "title": "Accelerate Reset Planning",
+          "description": "Significant payroll cut to prepare for rebuild",
+          "payrollPercentage": 68,
+          "flags": { "unlock": ["reset_begun", "cap_space"], "lock": ["window_extension"] },
+          "pathWeights": { "winNow": -15, "rebuild": 25, "hybrid": 5 }
+        },
+        {
+          "id": "y4_balanced_decline",
+          "title": "Balanced Decline",
+          "description": "Moderate reduction while keeping options open",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["moderate_reset"], "lock": [] },
+          "pathWeights": { "winNow": 8, "rebuild": 12, "hybrid": 18 }
+        }
+      ],
+      "5": [
+        {
+          "id": "y5_final_push",
+          "title": "Final Championship Push",
+          "description": "One last year at competitive spending",
+          "payrollPercentage": 82,
+          "flags": { "unlock": ["last_hurrah"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": -15, "hybrid": 8 }
+        },
+        {
+          "id": "y5_moderate_reset",
+          "title": "Moderate Reset",
+          "description": "Significant reduction while maintaining some depth",
+          "payrollPercentage": 68,
+          "flags": { "unlock": ["reset_complete"], "lock": [] },
+          "pathWeights": { "winNow": -5, "rebuild": 18, "hybrid": 12 }
+        },
+        {
+          "id": "y5_hard_reset",
+          "title": "Complete Reset",
+          "description": "Cut payroll drastically to create cap space",
+          "payrollPercentage": 55,
+          "flags": { "unlock": ["cap_flexibility", "rebuild_ready"], "lock": [] },
+          "pathWeights": { "winNow": -20, "rebuild": 28, "hybrid": 0 }
+        },
+        {
+          "id": "y5_maintain_floor",
+          "title": "Maintain Competitive Floor",
+          "description": "Keep payroll at sustainable competitive level",
+          "payrollPercentage": 72,
+          "flags": { "unlock": ["sustainable"], "lock": [] },
+          "pathWeights": { "winNow": 8, "rebuild": 10, "hybrid": 16 }
+        }
+      ]
     }
   },
   "nets": {
@@ -113,6 +285,178 @@
       "3": "Young arms maturing. Increase spending strategically.",
       "4": "Championship window open! Maximize payroll.",
       "5": "Evaluate and adjust. Begin next cycle preparation."
+    },
+    "decisions": {
+      "1": [
+        {
+          "id": "y1_build_patient",
+          "title": "Build Patiently with Young Arms",
+          "description": "Keep spending moderate, invest in development infrastructure",
+          "payrollPercentage": 70,
+          "flags": { "unlock": ["young_core_invested", "dev_infrastructure"], "lock": ["big_spender_early"] },
+          "pathWeights": { "winNow": -10, "rebuild": 15, "hybrid": 20 }
+        },
+        {
+          "id": "y1_add_piece",
+          "title": "Add Complementary Veteran",
+          "description": "Sign a $8M/year vet to support young arms",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["veteran_support", "balanced_roster"], "lock": [] },
+          "pathWeights": { "winNow": 8, "rebuild": 5, "hybrid": 18 }
+        },
+        {
+          "id": "y1_invest_development",
+          "title": "Heavy Investment in Development",
+          "description": "Focus scouting, coaching, analytics infrastructure",
+          "payrollPercentage": 65,
+          "flags": { "unlock": ["dev_advantage", "analytical_edge"], "lock": ["big_spending"] },
+          "pathWeights": { "winNow": -15, "rebuild": 20, "hybrid": 15 }
+        },
+        {
+          "id": "y1_balanced_growth",
+          "title": "Balanced Growth Strategy",
+          "description": "Develop young core while maintaining competitiveness",
+          "payrollPercentage": 72,
+          "flags": { "unlock": ["balanced_path", "flexibility_y2"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 10, "hybrid": 22 }
+        }
+      ],
+      "2": [
+        {
+          "id": "y2_continue_build",
+          "title": "Continue Building Young Core",
+          "description": "Add another complementary piece, maintain discipline",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["core_strengthened", "patience_rewarded"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 12, "hybrid": 20 }
+        },
+        {
+          "id": "y2_accelerate_spend",
+          "title": "Accelerate Spending",
+          "description": "Young arms looking promising, add impact players",
+          "payrollPercentage": 88,
+          "flags": { "unlock": ["peak_approaching", "aggressive_path"], "lock": ["patient_approach"] },
+          "pathWeights": { "winNow": 15, "rebuild": 0, "hybrid": 12 }
+        },
+        {
+          "id": "y2_selective_addition",
+          "title": "Selective Mid-Tier Additions",
+          "description": "Add depth without overcommitting",
+          "payrollPercentage": 80,
+          "flags": { "unlock": ["selective_roster", "flexible_y3"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 8, "hybrid": 20 }
+        },
+        {
+          "id": "y2_maintain_young",
+          "title": "Maintain Young Core Focus",
+          "description": "Keep payroll low, let young arms develop further",
+          "payrollPercentage": 72,
+          "flags": { "unlock": ["continued_development"], "lock": ["aggressive_y2"] },
+          "pathWeights": { "winNow": -8, "rebuild": 18, "hybrid": 15 }
+        }
+      ],
+      "3": [
+        {
+          "id": "y3_peak_preparation",
+          "title": "Peak Year Preparation",
+          "description": "Significant spending increase as young pitching matures",
+          "payrollPercentage": 92,
+          "flags": { "unlock": ["peak_ready", "window_open"], "lock": ["rebuild_y3"] },
+          "pathWeights": { "winNow": 20, "rebuild": -5, "hybrid": 18 }
+        },
+        {
+          "id": "y3_aggressive_peak",
+          "title": "Go Aggressive Now",
+          "description": "Young arms are ready, maximize payroll for title push",
+          "payrollPercentage": 100,
+          "flags": { "unlock": ["championship_window", "all_in"], "lock": ["flexibility_y4"] },
+          "pathWeights": { "winNow": 28, "rebuild": -20, "hybrid": 5 }
+        },
+        {
+          "id": "y3_measured_increase",
+          "title": "Measured Increase",
+          "description": "Increase spending, but maintain some flexibility",
+          "payrollPercentage": 86,
+          "flags": { "unlock": ["strategic_peak", "flexible_y4"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": 5, "hybrid": 22 }
+        },
+        {
+          "id": "y3_extend_development",
+          "title": "Extend Development Phase",
+          "description": "Give young arms one more year, stay patient",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["extended_dev", "peak_y4"], "lock": ["early_peak"] },
+          "pathWeights": { "winNow": -10, "rebuild": 15, "hybrid": 12 }
+        }
+      ],
+      "4": [
+        {
+          "id": "y4_maximize_window",
+          "title": "Maximize Championship Window",
+          "description": "All-in spending year for championship pursuit",
+          "payrollPercentage": 100,
+          "flags": { "unlock": ["window_peak", "last_window"], "lock": ["flexibility_y5"] },
+          "pathWeights": { "winNow": 30, "rebuild": -25, "hybrid": 0 }
+        },
+        {
+          "id": "y4_sustain_peak",
+          "title": "Sustain Peak Spending",
+          "description": "High payroll without maximum, keep flexibility",
+          "payrollPercentage": 94,
+          "flags": { "unlock": ["sustained_peak", "flexible_y5"], "lock": [] },
+          "pathWeights": { "winNow": 20, "rebuild": -5, "hybrid": 18 }
+        },
+        {
+          "id": "y4_prudent_spending",
+          "title": "Prudent Competitive Spending",
+          "description": "Balance window with future flexibility",
+          "payrollPercentage": 86,
+          "flags": { "unlock": ["balanced_window", "flexible_reset"], "lock": [] },
+          "pathWeights": { "winNow": 15, "rebuild": 8, "hybrid": 22 }
+        },
+        {
+          "id": "y4_begin_reset",
+          "title": "Begin Reset Planning",
+          "description": "Peak has passed, start reducing for next cycle",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["reset_initiated", "youth_reset"], "lock": ["final_push"] },
+          "pathWeights": { "winNow": -10, "rebuild": 20, "hybrid": 12 }
+        }
+      ],
+      "5": [
+        {
+          "id": "y5_extend_window",
+          "title": "Extend Competitive Window",
+          "description": "Maintain high spending one more year",
+          "payrollPercentage": 88,
+          "flags": { "unlock": ["extended_window"], "lock": [] },
+          "pathWeights": { "winNow": 15, "rebuild": -5, "hybrid": 16 }
+        },
+        {
+          "id": "y5_moderate_reset",
+          "title": "Moderate Reset",
+          "description": "Significant reduction while maintaining competitiveness",
+          "payrollPercentage": 74,
+          "flags": { "unlock": ["reset_complete"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 15, "hybrid": 18 }
+        },
+        {
+          "id": "y5_balanced_finish",
+          "title": "Balanced Finish",
+          "description": "Sustain competitive level with flexibility",
+          "payrollPercentage": 80,
+          "flags": { "unlock": ["sustainable_model"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 10, "hybrid": 20 }
+        },
+        {
+          "id": "y5_accelerated_reset",
+          "title": "Accelerated Reset",
+          "description": "Cut payroll significantly for rebuild prep",
+          "payrollPercentage": 62,
+          "flags": { "unlock": ["reset_ready", "cap_space"], "lock": [] },
+          "pathWeights": { "winNow": -15, "rebuild": 25, "hybrid": 5 }
+        }
+      ]
     }
   },
   "jets": {
@@ -142,6 +486,178 @@
       "3": "Peak spending year! Go all-in for a championship.",
       "4": "QB extension coming. Start reducing other salaries.",
       "5": "Big QB deal kicks in. Reset other positions accordingly."
+    },
+    "decisions": {
+      "1": [
+        {
+          "id": "y1_aggressive_build",
+          "title": "Aggressive Build Around QB",
+          "description": "Spend big to add impact talent while cap hit is low",
+          "payrollPercentage": 82,
+          "flags": { "unlock": ["star_roster", "peak_window"], "lock": ["patient_rebuild"] },
+          "pathWeights": { "winNow": 20, "rebuild": -10, "hybrid": 12 }
+        },
+        {
+          "id": "y1_balanced_build",
+          "title": "Balanced Team Building",
+          "description": "Spend moderately on both sides of ball, maintain flexibility",
+          "payrollPercentage": 72,
+          "flags": { "unlock": ["balanced_roster", "flexible_y2"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 8, "hybrid": 20 }
+        },
+        {
+          "id": "y1_patient_development",
+          "title": "Patient Development Phase",
+          "description": "Keep spending low, focus on draft and young player development",
+          "payrollPercentage": 62,
+          "flags": { "unlock": ["young_core_dev", "draft_advantage"], "lock": ["big_spender"] },
+          "pathWeights": { "winNow": -15, "rebuild": 25, "hybrid": 10 }
+        },
+        {
+          "id": "y1_selective_build",
+          "title": "Selective Impact Additions",
+          "description": "Add 1-2 star players, develop rest through draft",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["partial_stars", "draft_core"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": 10, "hybrid": 18 }
+        }
+      ],
+      "2": [
+        {
+          "id": "y2_aggressive_window",
+          "title": "Aggressive Window Exploitation",
+          "description": "Max spending to build contender around cheap QB",
+          "payrollPercentage": 95,
+          "flags": { "unlock": ["championship_ready", "no_flexibility"], "lock": ["patient_y2"] },
+          "pathWeights": { "winNow": 28, "rebuild": -20, "hybrid": 5 }
+        },
+        {
+          "id": "y2_strategic_additions",
+          "title": "Strategic Positional Additions",
+          "description": "Add talent in key positions, balance spending",
+          "payrollPercentage": 85,
+          "flags": { "unlock": ["strategic_roster", "flexible_y3"], "lock": [] },
+          "pathWeights": { "winNow": 18, "rebuild": 0, "hybrid": 18 }
+        },
+        {
+          "id": "y2_continue_building",
+          "title": "Continue Young Core Building",
+          "description": "Steady spending increase while developing young talent",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["core_strengthening", "patient_path"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 15, "hybrid": 16 }
+        },
+        {
+          "id": "y2_measured_spend",
+          "title": "Measured Spending Growth",
+          "description": "Moderate increase avoiding overcommitment",
+          "payrollPercentage": 80,
+          "flags": { "unlock": ["measured_growth", "flexible_y3"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": 8, "hybrid": 20 }
+        }
+      ],
+      "3": [
+        {
+          "id": "y3_peak_spending",
+          "title": "Peak Championship Spending",
+          "description": "Max payroll for final title push before QB extension",
+          "payrollPercentage": 100,
+          "flags": { "unlock": ["last_window", "all_in"], "lock": ["flexibility_y4"] },
+          "pathWeights": { "winNow": 30, "rebuild": -25, "hybrid": 0 }
+        },
+        {
+          "id": "y3_strong_competitive",
+          "title": "Strong Competitive Spending",
+          "description": "High payroll without maximum, preserve flexibility",
+          "payrollPercentage": 92,
+          "flags": { "unlock": ["sustained_peak", "flexible_y4"], "lock": [] },
+          "pathWeights": { "winNow": 20, "rebuild": -5, "hybrid": 16 }
+        },
+        {
+          "id": "y3_balanced_peak",
+          "title": "Balanced Peak Year",
+          "description": "Increase spending while maintaining sustainability",
+          "payrollPercentage": 86,
+          "flags": { "unlock": ["balanced_window", "flexible_y4"], "lock": [] },
+          "pathWeights": { "winNow": 14, "rebuild": 8, "hybrid": 20 }
+        },
+        {
+          "id": "y3_extended_development",
+          "title": "Extended Development Focus",
+          "description": "Moderate increase, focus on young core maturation",
+          "payrollPercentage": 78,
+          "flags": { "unlock": ["core_mature", "peak_y4"], "lock": ["immediate_peak"] },
+          "pathWeights": { "winNow": -8, "rebuild": 18, "hybrid": 14 }
+        }
+      ],
+      "4": [
+        {
+          "id": "y4_maintain_peak",
+          "title": "Maintain Peak Spending",
+          "description": "Keep high payroll as QB gets extension",
+          "payrollPercentage": 88,
+          "flags": { "unlock": ["extended_window"], "lock": ["hard_reset"] },
+          "pathWeights": { "winNow": 18, "rebuild": -15, "hybrid": 12 }
+        },
+        {
+          "id": "y4_manage_extension",
+          "title": "Manage QB Extension Impact",
+          "description": "Reduce other spending to accommodate QB's new deal",
+          "payrollPercentage": 80,
+          "flags": { "unlock": ["extension_managed", "flexible_y5"], "lock": [] },
+          "pathWeights": { "winNow": 10, "rebuild": 10, "hybrid": 18 }
+        },
+        {
+          "id": "y4_significant_reduction",
+          "title": "Significant Payroll Reduction",
+          "description": "Cut costs early in anticipation of QB extension",
+          "payrollPercentage": 70,
+          "flags": { "unlock": ["reset_begun", "cap_prep"], "lock": ["competitive_y4"] },
+          "pathWeights": { "winNow": -20, "rebuild": 25, "hybrid": 5 }
+        },
+        {
+          "id": "y4_strategic_reset",
+          "title": "Strategic Reset Start",
+          "description": "Begin planned transition while staying competitive",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["transition_mode", "flexible_y5"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 15, "hybrid": 16 }
+        }
+      ],
+      "5": [
+        {
+          "id": "y5_one_last_window",
+          "title": "One Last Window Push",
+          "description": "Maintain competitive spending despite QB extension",
+          "payrollPercentage": 84,
+          "flags": { "unlock": ["final_window"], "lock": [] },
+          "pathWeights": { "winNow": 12, "rebuild": -10, "hybrid": 14 }
+        },
+        {
+          "id": "y5_managed_reset",
+          "title": "Managed Reset",
+          "description": "Reduce spending while keeping core intact",
+          "payrollPercentage": 72,
+          "flags": { "unlock": ["reset_complete"], "lock": [] },
+          "pathWeights": { "winNow": 5, "rebuild": 18, "hybrid": 14 }
+        },
+        {
+          "id": "y5_rebuild_mode",
+          "title": "Rebuild Mode",
+          "description": "Significant reduction focused on young core development",
+          "payrollPercentage": 62,
+          "flags": { "unlock": ["rebuild_ready", "young_focus"], "lock": [] },
+          "pathWeights": { "winNow": -15, "rebuild": 25, "hybrid": 5 }
+        },
+        {
+          "id": "y5_sustainable_level",
+          "title": "Sustainable Competitive Level",
+          "description": "Find balance for long-term competitiveness",
+          "payrollPercentage": 76,
+          "flags": { "unlock": ["sustainable_model"], "lock": [] },
+          "pathWeights": { "winNow": 8, "rebuild": 12, "hybrid": 18 }
+        }
+      ]
     }
   },
   "giants": {
