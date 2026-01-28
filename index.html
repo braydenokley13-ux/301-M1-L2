@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Curve Room 2.0 - Salary Cap Simulation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <header class="hero">
+            <h1>The Curve Room 2.0</h1>
+            <p class="subtitle">Master the Payroll Curve: Build, Peak, Reset</p>
+            <p class="description">Learn how professional sports teams manage their salary cap through real-world scenarios with actual NYC teams.</p>
+        </header>
+
+        <section class="team-selector">
+            <h2>Choose Your Team</h2>
+            <div class="league-section">
+                <h3 class="league-title nba">NBA</h3>
+                <div class="team-cards">
+                    <div class="team-card knicks" data-team="knicks">
+                        <div class="team-logo">NYK</div>
+                        <h4>New York Knicks</h4>
+                        <p class="situation">Win-Now Window</p>
+                        <p class="difficulty">Difficulty: Hard</p>
+                    </div>
+                    <div class="team-card nets" data-team="nets">
+                        <div class="team-logo">BKN</div>
+                        <h4>Brooklyn Nets</h4>
+                        <p class="situation">Rebuild Phase</p>
+                        <p class="difficulty">Difficulty: Medium</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="league-section">
+                <h3 class="league-title mlb">MLB</h3>
+                <div class="team-cards">
+                    <div class="team-card yankees" data-team="yankees">
+                        <div class="team-logo">NYY</div>
+                        <h4>New York Yankees</h4>
+                        <p class="situation">Competitive Window</p>
+                        <p class="difficulty">Difficulty: Hard</p>
+                    </div>
+                    <div class="team-card mets" data-team="mets">
+                        <div class="team-logo">NYM</div>
+                        <h4>New York Mets</h4>
+                        <p class="situation">Emerging Contender</p>
+                        <p class="difficulty">Difficulty: Medium</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="league-section">
+                <h3 class="league-title nfl">NFL</h3>
+                <div class="team-cards">
+                    <div class="team-card jets" data-team="jets">
+                        <div class="team-logo">NYJ</div>
+                        <h4>New York Jets</h4>
+                        <p class="situation">Rookie QB Window</p>
+                        <p class="difficulty">Difficulty: Medium</p>
+                    </div>
+                    <div class="team-card giants" data-team="giants">
+                        <div class="team-logo">NYG</div>
+                        <h4>New York Giants</h4>
+                        <p class="situation">Post-Star Reset</p>
+                        <p class="difficulty">Difficulty: Easy</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Team Briefing Page -->
+    <div id="briefing-page" class="page">
+        <header class="briefing-header">
+            <button class="back-btn" onclick="showPage('landing-page')">&larr; Back</button>
+            <h1 id="briefing-team-name">Team Name</h1>
+            <p id="briefing-situation" class="situation-tag">Situation</p>
+        </header>
+
+        <section class="briefing-content">
+            <div class="cap-overview">
+                <h2>Current Cap Situation</h2>
+                <div class="cap-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Current Payroll</span>
+                        <span id="current-payroll" class="stat-value">$0M</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Salary Cap</span>
+                        <span id="salary-cap" class="stat-value">$0M</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Cap Space</span>
+                        <span id="cap-space" class="stat-value">$0M</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-contracts">
+                <h2>Key Contracts</h2>
+                <div id="contracts-list" class="contracts-grid">
+                    <!-- Contracts will be populated by JS -->
+                </div>
+            </div>
+
+            <div class="team-challenge">
+                <h2>Your Challenge</h2>
+                <p id="challenge-text">Challenge description will appear here.</p>
+            </div>
+
+            <button class="start-game-btn" onclick="startGame()">Start Simulation</button>
+        </section>
+    </div>
+
+    <!-- Game Page -->
+    <div id="game-page" class="page">
+        <header class="game-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="confirmExit()">&larr; Exit</button>
+                <h1 id="game-team-name">Team Name</h1>
+            </div>
+            <div class="header-right">
+                <div class="health-meter">
+                    <span class="health-label">League Health</span>
+                    <div class="health-bar">
+                        <div id="health-fill" class="health-fill" style="width: 50%"></div>
+                    </div>
+                    <span id="health-score" class="health-score">50</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="game-content">
+            <div class="chart-section">
+                <h2>Payroll Curve</h2>
+                <div class="chart-container">
+                    <canvas id="payroll-chart"></canvas>
+                </div>
+                <div class="curve-legend">
+                    <span class="legend-item"><span class="legend-color user"></span> Your Curve</span>
+                    <span class="legend-item"><span class="legend-color ideal"></span> Ideal Curve</span>
+                </div>
+            </div>
+
+            <div class="decision-section">
+                <div class="year-tabs">
+                    <button class="year-tab active" data-year="1">Year 1</button>
+                    <button class="year-tab" data-year="2">Year 2</button>
+                    <button class="year-tab" data-year="3">Year 3</button>
+                    <button class="year-tab" data-year="4">Year 4</button>
+                    <button class="year-tab" data-year="5">Year 5</button>
+                </div>
+
+                <div class="decision-panel">
+                    <h3 id="year-title">Year 1 - Build Phase</h3>
+                    <p id="year-description" class="year-desc">Start conservative. Build cap flexibility for the future.</p>
+
+                    <div class="payroll-adjuster">
+                        <label for="payroll-slider">Set Payroll:</label>
+                        <input type="range" id="payroll-slider" min="0" max="100" value="50">
+                        <div class="payroll-display">
+                            <span id="payroll-amount">$0M</span>
+                            <span id="payroll-percent" class="payroll-percent">(50% of cap)</span>
+                        </div>
+                    </div>
+
+                    <div class="decision-actions">
+                        <p id="action-hint" class="action-hint">Tip: Keep spending low in build years to save cap space.</p>
+                    </div>
+                </div>
+
+                <div class="game-controls">
+                    <button id="prev-year-btn" class="nav-btn" onclick="previousYear()" disabled>&larr; Previous</button>
+                    <button id="next-year-btn" class="nav-btn" onclick="nextYear()">Next &rarr;</button>
+                    <button id="finish-btn" class="finish-btn hidden" onclick="finishGame()">Finish Simulation</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Results Page -->
+    <div id="results-page" class="page">
+        <header class="results-header">
+            <h1>Simulation Complete!</h1>
+        </header>
+
+        <section class="results-content">
+            <div class="final-chart">
+                <h2>Your Final Payroll Curve</h2>
+                <div class="chart-container">
+                    <canvas id="final-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="score-section">
+                <h2>League Health Score</h2>
+                <div id="final-score" class="final-score">0</div>
+                <p id="score-feedback" class="score-feedback">Feedback will appear here.</p>
+            </div>
+
+            <div id="claim-code-section" class="claim-code-section">
+                <h2>Your Claim Code</h2>
+                <div id="claim-code-display" class="claim-code">
+                    <span id="claim-code-tier" class="tier-badge">GOLD</span>
+                    <span id="claim-code-text" class="code-text">CURVE-301-GOLD</span>
+                </div>
+                <p id="xp-value" class="xp-value">250 XP</p>
+                <button class="copy-btn" onclick="copyClaimCode()">Copy Code</button>
+            </div>
+
+            <div id="no-code-section" class="no-code-section hidden">
+                <h2>No Claim Code Earned</h2>
+                <p>Your score was below 55. Try again to earn a claim code!</p>
+            </div>
+
+            <div class="education-recap">
+                <h2>What You Learned</h2>
+                <div id="recap-content" class="recap-content">
+                    <p>Great job! You learned about the payroll curve rhythm:</p>
+                    <ul>
+                        <li><strong>Build Phase:</strong> Keep spending low to build cap flexibility</li>
+                        <li><strong>Peak Phase:</strong> Spend aggressively when your window opens</li>
+                        <li><strong>Reset Phase:</strong> Reduce payroll to prepare for the next cycle</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="results-actions">
+                <button class="play-again-btn" onclick="playAgain()">Play Again</button>
+                <button class="home-btn" onclick="goHome()">Choose Different Team</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/data-loader.js"></script>
+    <script src="js/game-engine.js"></script>
+    <script src="js/ui-controller.js"></script>
+</body>
+</html>
