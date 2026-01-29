@@ -152,6 +152,45 @@ class DecisionEngine {
     getActiveFlags() {
         return Array.from(this.activeFlags);
     }
+
+    /**
+     * Get decision strategy object for a year and decision
+     * @param {number} year - Year (1-5)
+     * @param {string} decisionId - Decision ID
+     * @returns {Object} Strategy object with tag, baseline, flavor
+     */
+    getDecisionStrategy(year, decisionId) {
+        const decision = this.findDecision(year, decisionId);
+        return decision?.strategy || null;
+    }
+
+    /**
+     * Get payroll curve with strategy metadata
+     * Includes both values and strategy tags
+     * @returns {Array} Array of objects with payroll and strategy info
+     */
+    getPayrollCurveWithStrategy() {
+        return this.decisions.map((decisionId, index) => {
+            const year = index + 1;
+            const decision = this.getCurrentDecision(year);
+            if (decision && decision.strategy) {
+                return {
+                    year: year,
+                    payroll: decision.payrollPercentage,
+                    strategy: decision.strategy.tag,
+                    flavor: decision.strategy.flavor,
+                    baseline: decision.strategy.baseline
+                };
+            }
+            return {
+                year: year,
+                payroll: 50,
+                strategy: null,
+                flavor: null,
+                baseline: null
+            };
+        });
+    }
 }
 
 const GameEngine = {
@@ -649,6 +688,157 @@ const GameEngine = {
      */
     formatMoney(millions) {
         return `$${millions}M`;
+    },
+
+    /**
+     * Get strategy info for a decision
+     * @param {number} year - Year (1-5)
+     * @param {string} decisionId - Decision ID
+     * @returns {Object} Strategy object or null
+     */
+    getDecisionStrategy(year, decisionId) {
+        if (!this.state.decisionEngine) return null;
+        return this.state.decisionEngine.getDecisionStrategy(year, decisionId);
+    },
+
+    /**
+     * Get payroll curve with strategy metadata
+     * @returns {Array} Array of objects with year, payroll, strategy info
+     */
+    getPayrollCurveWithStrategy() {
+        if (!this.state.decisionEngine) return null;
+        return this.state.decisionEngine.getPayrollCurveWithStrategy();
+    },
+
+    /**
+     * Get payroll curve statistics
+     * @returns {Object} Stats including avg, max, min payroll percentages
+     */
+    getPayrollCurveStats() {
+        const curve = this.state.payrollDecisions;
+        const filledCurve = curve.filter(v => v !== null && v !== undefined);
+
+        if (filledCurve.length === 0) {
+            return { avg: 0, max: 0, min: 0 };
+        }
+
+        const avg = Math.round(filledCurve.reduce((a, b) => a + b, 0) / filledCurve.length);
+        const max = Math.max(...filledCurve);
+        const min = Math.min(...filledCurve);
+
+        return { avg, max, min };
+    },
+
+    /**
+     * Get recommended path curves for comparison
+     * @returns {Object} Recommended curves for winNow, hybrid, rebuild
+     */
+    getRecommendedPaths() {
+        if (!this.state.currentTeam || !this.state.currentTeam.idealCurve) {
+            return {
+                winNow: [85, 95, 100, 70, 60],
+                hybrid: [75, 75, 75, 75, 75],
+                rebuild: [50, 60, 80, 95, 85]
+            };
+        }
+
+        // Use team's ideal curve as one of the recommendations
+        return {
+            winNow: [85, 95, 100, 70, 60],
+            hybrid: this.state.currentTeam.idealCurve,
+            rebuild: [50, 60, 80, 95, 85]
+        };
+    },
+
+    /**
+     * Validate decision consistency
+     * Checks if payrollPercentage matches strategy baseline
+     * @returns {Array} Array of validation errors
+     */
+    validateDecisionConsistency() {
+        const errors = [];
+        if (!this.state.decisionEngine) return errors;
+
+        const curveWithStrategy = this.getPayrollCurveWithStrategy();
+
+        curveWithStrategy.forEach(item => {
+            if (item.strategy && item.payroll !== item.baseline) {
+                errors.push({
+                    year: item.year,
+                    message: `Year ${item.year}: Payroll ${item.payroll}% doesn't match baseline ${item.baseline}%`,
+                    severity: 'warning'
+                });
+            }
+        });
+
+        return errors;
+    },
+
+    /**
+     * Validate path coherence
+     * Ensures the chosen path has appropriate decisions
+     * @returns {Object} Validation result with isCoherent flag and messages
+     */
+    validatePathCoherence() {
+        if (!this.state.decisionEngine) {
+            return { isCoherent: true, messages: [] };
+        }
+
+        const path = this.getDeterminedPath();
+        const curveWithStrategy = this.getPayrollCurveWithStrategy();
+        const messages = [];
+        let isCoherent = true;
+
+        // Count strategy types
+        const strategyCounts = {
+            SPEND_HEAVY: 0,
+            COMPETITIVE: 0,
+            MODERATE: 0,
+            REBUILD: 0
+        };
+
+        curveWithStrategy.forEach(item => {
+            if (item.strategy) {
+                strategyCounts[item.strategy]++;
+            }
+        });
+
+        // Path-specific validation
+        if (path === 'winNow') {
+            // Win-Now should have 2+ SPEND_HEAVY in years 1-3
+            const earlySpendHeavy = curveWithStrategy.slice(0, 3)
+                .filter(item => item.strategy === 'SPEND_HEAVY').length;
+
+            if (earlySpendHeavy < 2) {
+                isCoherent = false;
+                messages.push('Win-Now path should have at least 2 SPEND_HEAVY decisions in Years 1-3');
+            }
+        } else if (path === 'rebuild') {
+            // Rebuild should have 2+ REBUILD/MODERATE in years 1-3
+            const earlyRebuild = curveWithStrategy.slice(0, 3)
+                .filter(item => item.strategy === 'REBUILD' || item.strategy === 'MODERATE').length;
+
+            if (earlyRebuild < 2) {
+                isCoherent = false;
+                messages.push('Rebuild path should have at least 2 REBUILD/MODERATE decisions in Years 1-3');
+            }
+        } else if (path === 'hybrid') {
+            // Hybrid should have 3+ COMPETITIVE/MODERATE
+            if (strategyCounts.COMPETITIVE + strategyCounts.MODERATE < 3) {
+                isCoherent = false;
+                messages.push('Hybrid path should have at least 3 COMPETITIVE/MODERATE decisions');
+            }
+        }
+
+        // Check payroll stays within valid range (40-140%)
+        curveWithStrategy.forEach(item => {
+            if (item.payroll < 40 || item.payroll > 140) {
+                isCoherent = false;
+                messages.push(`Year ${item.year}: Payroll ${item.payroll}% is outside valid range (40-140%)`);
+            }
+        });
+
+        return { isCoherent, messages, strategyCounts };
     }
 };
 

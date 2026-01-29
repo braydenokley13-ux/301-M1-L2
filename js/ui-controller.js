@@ -263,12 +263,17 @@ function updateYearDisplay() {
     document.getElementById('year-description').textContent = phaseInfo.description;
     document.getElementById('action-hint').textContent = `Tip: ${hint}`;
 
-    // Update slider
-    const slider = document.getElementById('payroll-slider');
-    slider.value = currentPayroll;
-
-    // Update payroll display
-    updatePayrollDisplay(currentPayroll);
+    // Check game mode: decisions or slider
+    if (state.gameMode === 'decisions') {
+        // Hide slider, show decision cards
+        renderDecisionCards(year);
+        displayPayrollCurveInfo();
+    } else {
+        // Show slider for slider mode
+        const slider = document.getElementById('payroll-slider');
+        slider.value = currentPayroll;
+        updatePayrollDisplay(currentPayroll);
+    }
 
     // Update navigation buttons
     document.getElementById('prev-year-btn').disabled = (year === 1);
@@ -280,6 +285,155 @@ function updateYearDisplay() {
         document.getElementById('next-year-btn').classList.remove('hidden');
         document.getElementById('finish-btn').classList.add('hidden');
     }
+}
+
+/**
+ * Render decision cards with strategy tags for decision mode
+ * @param {number} year - Current year
+ */
+function renderDecisionCards(year) {
+    const payrollAdjuster = document.querySelector('.payroll-adjuster');
+    const actionsDiv = document.querySelector('.decision-actions');
+
+    if (!payrollAdjuster) return;
+
+    // Hide slider
+    payrollAdjuster.style.display = 'none';
+
+    // Get available decisions
+    const decisions = GameEngine.getAllDecisions(year);
+    const currentDecision = GameEngine.getCurrentDecision(year);
+    const availableDecisions = GameEngine.getAvailableDecisions(year);
+
+    // Create decision cards container
+    let cardsContainer = document.getElementById('decision-cards-container');
+    if (!cardsContainer) {
+        cardsContainer = document.createElement('div');
+        cardsContainer.id = 'decision-cards-container';
+        cardsContainer.className = 'decision-cards-grid';
+        payrollAdjuster.parentNode.insertBefore(cardsContainer, actionsDiv);
+    }
+
+    // Clear existing cards
+    cardsContainer.innerHTML = '';
+
+    // Render each decision as a card
+    decisions.forEach(decision => {
+        const isLocked = !availableDecisions.find(d => d.id === decision.id);
+        const isSelected = currentDecision && currentDecision.id === decision.id;
+
+        const card = document.createElement('div');
+        card.className = `decision-card ${isLocked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
+
+        const strategy = decision.strategy;
+        const strategyTag = strategy ? strategy.tag : 'UNKNOWN';
+        const strategyClass = strategyTag.toLowerCase().replace('_', '-');
+
+        card.innerHTML = `
+            <div class="decision-card-header">
+                <h4 class="decision-title">${decision.title}</h4>
+                ${strategy ? `<span class="strategy-tag ${strategyClass}">${strategyTag}</span>` : ''}
+            </div>
+            <div class="decision-description">${decision.description}</div>
+            ${strategy ? `<div class="strategy-flavor">${strategy.flavor}</div>` : ''}
+            <div class="decision-impact">
+                <div class="payroll-impact">
+                    <span class="impact-label">Payroll:</span>
+                    <span class="impact-value">${decision.payrollPercentage}% of cap</span>
+                </div>
+                ${decision.flags.unlock.length > 0 ? `
+                    <div class="flag-impact">
+                        <span class="impact-label">Unlocks:</span>
+                        <span class="impact-value">${decision.flags.unlock.join(', ')}</span>
+                    </div>
+                ` : ''}
+                ${decision.flags.lock.length > 0 ? `
+                    <div class="flag-impact">
+                        <span class="impact-label">Locks:</span>
+                        <span class="impact-value">${decision.flags.lock.join(', ')}</span>
+                    </div>
+                ` : ''}
+            </div>
+            <button class="select-decision-btn" ${isLocked || isSelected ? 'disabled' : ''}
+                onclick="selectDecision(${year}, '${decision.id}')">
+                ${isSelected ? 'Selected' : isLocked ? 'Locked' : 'Select'}
+            </button>
+        `;
+
+        cardsContainer.appendChild(card);
+    });
+}
+
+/**
+ * Select a decision for the current year
+ * @param {number} year - Year number
+ * @param {string} decisionId - Decision ID
+ */
+function selectDecision(year, decisionId) {
+    const decision = GameEngine.applyDecision(year, decisionId);
+    if (decision) {
+        updateYearDisplay();
+        updatePayrollChart();
+        updateHealthMeter();
+    }
+}
+
+/**
+ * Display payroll curve information with strategy breakdown
+ */
+function displayPayrollCurveInfo() {
+    const state = GameEngine.getState();
+    if (state.gameMode !== 'decisions') return;
+
+    // Get curve with strategy
+    const curveWithStrategy = GameEngine.getPayrollCurveWithStrategy();
+    const stats = GameEngine.getPayrollCurveStats();
+    const path = GameEngine.getDeterminedPath();
+
+    // Find or create info panel
+    let infoPanel = document.getElementById('payroll-curve-info');
+    if (!infoPanel) {
+        infoPanel = document.createElement('div');
+        infoPanel.id = 'payroll-curve-info';
+        infoPanel.className = 'payroll-curve-info';
+
+        const chartSection = document.querySelector('.chart-section');
+        if (chartSection) {
+            chartSection.appendChild(infoPanel);
+        }
+    }
+
+    // Build the info panel HTML
+    let html = '<div class="curve-stats">';
+    html += '<h3>Your Spending Path</h3>';
+    html += `<div class="stats-grid">`;
+    html += `<div class="stat-item"><span class="stat-label">Avg:</span><span class="stat-value">${stats.avg}%</span></div>`;
+    html += `<div class="stat-item"><span class="stat-label">Max:</span><span class="stat-value">${stats.max}%</span></div>`;
+    html += `<div class="stat-item"><span class="stat-label">Min:</span><span class="stat-value">${stats.min}%</span></div>`;
+    html += `</div>`;
+
+    if (path) {
+        html += `<div class="path-indicator">Strategy Path: <strong>${path.toUpperCase()}</strong></div>`;
+    }
+
+    html += '</div>';
+
+    // Year-by-year breakdown
+    html += '<div class="year-breakdown">';
+    html += '<h4>Year-by-Year Breakdown</h4>';
+    curveWithStrategy.forEach(item => {
+        const strategyClass = item.strategy ? item.strategy.toLowerCase().replace('_', '-') : 'none';
+        html += `
+            <div class="year-breakdown-item">
+                <span class="year-label">Year ${item.year}:</span>
+                ${item.strategy ? `<span class="strategy-tag-small ${strategyClass}">${item.strategy}</span>` : ''}
+                <span class="payroll-value">${item.payroll}%</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    infoPanel.innerHTML = html;
 }
 
 /**
@@ -524,3 +678,4 @@ window.copyClaimCode = copyClaimCode;
 window.playAgain = playAgain;
 window.goHome = goHome;
 window.showPage = showPage;
+window.selectDecision = selectDecision;
