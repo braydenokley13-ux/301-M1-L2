@@ -775,6 +775,74 @@ const GameEngine = {
     },
 
     /**
+     * Get luxury tax threshold as percentage
+     * @returns {number} Luxury tax as % of cap
+     */
+    getLuxuryTaxPercent() {
+        if (!this.state.currentTeam) return 120;
+        const cap = this.state.currentTeam.salaryCap;
+        const tax = this.state.currentTeam.luxuryTax;
+        return Math.round((tax / cap) * 100);
+    },
+
+    /**
+     * Get minimum payroll threshold as percentage (typically ~90% of cap floor)
+     * @returns {number} Minimum payroll as % of cap
+     */
+    getMinPayrollPercent() {
+        return 40; // League minimum floor ~40% of cap
+    },
+
+    /**
+     * Get strategy color for a given payroll value at a year index
+     * Returns hex color based on the strategy tag of the decision at that year
+     * @param {number} yearIndex - 0-based year index
+     * @returns {string} Hex color string
+     */
+    getStrategyColorForYear(yearIndex) {
+        const STRATEGY_COLORS = {
+            SPEND_HEAVY: '#ff4444',
+            COMPETITIVE: '#ff9800',
+            MODERATE: '#4caf50',
+            REBUILD: '#1976d2'
+        };
+
+        if (!this.state.decisionEngine) return '#1a73e8';
+        const decision = this.state.decisionEngine.getCurrentDecision(yearIndex + 1);
+        if (decision && decision.strategy) {
+            return STRATEGY_COLORS[decision.strategy.tag] || '#1a73e8';
+        }
+        return '#1a73e8';
+    },
+
+    /**
+     * Get all strategy colors for the current curve
+     * @returns {Array<string>} Array of hex color strings for each year
+     */
+    getStrategyCurveColors() {
+        return [0, 1, 2, 3, 4].map(i => this.getStrategyColorForYear(i));
+    },
+
+    /**
+     * Get spending path trend description
+     * @returns {Object} Trend info with direction, description, and emoji
+     */
+    getSpendingTrend() {
+        const curve = this.state.payrollDecisions;
+        const firstHalf = (curve[0] + curve[1]) / 2;
+        const secondHalf = (curve[3] + curve[4]) / 2;
+        const diff = firstHalf - secondHalf;
+
+        if (diff > 15) {
+            return { direction: 'declining', description: 'Front-loaded spending (Win-Now taper)', icon: 'trending_down' };
+        } else if (diff < -15) {
+            return { direction: 'rising', description: 'Back-loaded spending (Rebuild ramp-up)', icon: 'trending_up' };
+        } else {
+            return { direction: 'steady', description: 'Balanced spending throughout', icon: 'trending_flat' };
+        }
+    },
+
+    /**
      * Validate path coherence
      * Ensures the chosen path has appropriate decisions
      * @returns {Object} Validation result with isCoherent flag and messages

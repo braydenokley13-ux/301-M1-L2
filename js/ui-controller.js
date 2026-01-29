@@ -127,6 +127,12 @@ async function startGame() {
     // Update game page header
     document.getElementById('game-team-name').textContent = teamData.name;
 
+    // Show/hide strategy legend based on game mode
+    const strategyLegend = document.getElementById('strategy-color-legend');
+    if (strategyLegend) {
+        strategyLegend.style.display = GameEngine.getState().gameMode === 'decisions' ? 'flex' : 'none';
+    }
+
     // Reset to year 1
     goToYear(1);
 
@@ -142,7 +148,7 @@ async function startGame() {
 }
 
 /**
- * Initialize the payroll curve chart
+ * Initialize the payroll curve chart with threshold lines and strategy colors
  */
 function initPayrollChart() {
     const ctx = document.getElementById('payroll-chart');
@@ -155,35 +161,74 @@ function initPayrollChart() {
 
     const userCurve = GameEngine.getUserCurve();
     const idealCurve = GameEngine.getIdealCurve();
+    const state = GameEngine.getState();
+    const isDecisionMode = state.gameMode === 'decisions';
+
+    // Get threshold lines
+    const luxuryTaxPct = GameEngine.getLuxuryTaxPercent();
+    const minPayrollPct = GameEngine.getMinPayrollPercent();
+
+    // Strategy-colored points for decision mode
+    const pointColors = isDecisionMode
+        ? GameEngine.getStrategyCurveColors()
+        : Array(5).fill('#1a73e8');
+
+    const datasets = [
+        {
+            label: 'Your Curve',
+            data: userCurve,
+            borderColor: '#1a73e8',
+            backgroundColor: 'rgba(26, 115, 232, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 8,
+            pointHoverRadius: 10,
+            pointBackgroundColor: pointColors,
+            pointBorderColor: pointColors,
+            pointBorderWidth: 2
+        },
+        {
+            label: 'Ideal Curve',
+            data: idealCurve,
+            borderColor: '#cccccc',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: '#cccccc'
+        },
+        {
+            label: 'Luxury Tax',
+            data: Array(5).fill(luxuryTaxPct),
+            borderColor: 'rgba(220, 53, 69, 0.6)',
+            borderDash: [10, 5],
+            borderWidth: 2,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 0
+        },
+        {
+            label: 'Payroll Floor',
+            data: Array(5).fill(minPayrollPct),
+            borderColor: 'rgba(108, 117, 125, 0.5)',
+            borderDash: [4, 4],
+            borderWidth: 1.5,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 0
+        }
+    ];
+
+    // Determine Y-axis max based on luxury tax
+    const yMax = Math.max(100, luxuryTaxPct + 10);
 
     payrollChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
-            datasets: [
-                {
-                    label: 'Your Curve',
-                    data: userCurve,
-                    borderColor: '#1a73e8',
-                    backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 6,
-                    pointBackgroundColor: '#1a73e8'
-                },
-                {
-                    label: 'Ideal Curve',
-                    data: idealCurve,
-                    borderColor: '#cccccc',
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#cccccc'
-                }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -191,10 +236,18 @@ function initPayrollChart() {
             scales: {
                 y: {
                     min: 0,
-                    max: 100,
+                    max: yMax,
                     title: {
                         display: true,
                         text: 'Payroll (% of Cap)'
+                    },
+                    grid: {
+                        color: function(context) {
+                            if (context.tick && context.tick.value === 100) {
+                                return 'rgba(26, 115, 232, 0.3)';
+                            }
+                            return 'rgba(0, 0, 0, 0.05)';
+                        }
                     }
                 }
             },
@@ -205,27 +258,56 @@ function initPayrollChart() {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return `${context.dataset.label}: ${context.raw}%`;
+                            const label = context.dataset.label;
+                            const value = context.raw;
+                            if (label === 'Luxury Tax' || label === 'Payroll Floor') {
+                                return `${label}: ${value}%`;
+                            }
+                            if (label === 'Your Curve') {
+                                const yearIdx = context.dataIndex;
+                                const millions = GameEngine.percentToMillions(value);
+                                const strategy = GameEngine.getDecisionStrategy(yearIdx + 1,
+                                    GameEngine.state.decisionEngine?.decisions[yearIdx]);
+                                let text = `${label}: ${value}% (${GameEngine.formatMoney(millions)})`;
+                                if (strategy) {
+                                    text += ` [${strategy.tag}]`;
+                                }
+                                return text;
+                            }
+                            return `${label}: ${value}%`;
                         }
                     }
                 }
             },
             animation: {
-                duration: 300
+                duration: 400,
+                easing: 'easeOutCubic'
             }
         }
     });
 }
 
 /**
- * Update the payroll chart with current data
+ * Update the payroll chart with current data and strategy colors
  */
 function updatePayrollChart() {
     if (!payrollChart) return;
 
+    const state = GameEngine.getState();
     const userCurve = GameEngine.getUserCurve();
+    const isDecisionMode = state.gameMode === 'decisions';
+
+    // Update user curve data
     payrollChart.data.datasets[0].data = userCurve;
-    payrollChart.update('none');
+
+    // Update point colors based on strategy tags
+    if (isDecisionMode) {
+        const pointColors = GameEngine.getStrategyCurveColors();
+        payrollChart.data.datasets[0].pointBackgroundColor = pointColors;
+        payrollChart.data.datasets[0].pointBorderColor = pointColors;
+    }
+
+    payrollChart.update('active');
 }
 
 /**
@@ -372,6 +454,9 @@ function renderDecisionCards(year) {
 function selectDecision(year, decisionId) {
     const decision = GameEngine.applyDecision(year, decisionId);
     if (decision) {
+        // Show real-time feedback flash
+        showDecisionFeedback(decision, year);
+
         updateYearDisplay();
         updatePayrollChart();
         updateHealthMeter();
@@ -379,7 +464,7 @@ function selectDecision(year, decisionId) {
 }
 
 /**
- * Display payroll curve information with strategy breakdown
+ * Display payroll curve information with strategy breakdown and comparison widget
  */
 function displayPayrollCurveInfo() {
     const state = GameEngine.getState();
@@ -389,6 +474,9 @@ function displayPayrollCurveInfo() {
     const curveWithStrategy = GameEngine.getPayrollCurveWithStrategy();
     const stats = GameEngine.getPayrollCurveStats();
     const path = GameEngine.getDeterminedPath();
+    const trend = GameEngine.getSpendingTrend();
+    const recommendedPaths = GameEngine.getRecommendedPaths();
+    const userCurve = GameEngine.getUserCurve();
 
     // Find or create info panel
     let infoPanel = document.getElementById('payroll-curve-info');
@@ -413,27 +501,135 @@ function displayPayrollCurveInfo() {
     html += `</div>`;
 
     if (path) {
-        html += `<div class="path-indicator">Strategy Path: <strong>${path.toUpperCase()}</strong></div>`;
+        const pathLabels = { winNow: 'WIN NOW', rebuild: 'REBUILD', hybrid: 'HYBRID' };
+        const pathClasses = { winNow: 'spend-heavy', rebuild: 'rebuild', hybrid: 'competitive' };
+        html += `<div class="path-indicator">
+            Strategy Path: <span class="strategy-tag-small ${pathClasses[path]}">${pathLabels[path]}</span>
+        </div>`;
     }
+
+    // Trend indicator
+    html += `<div class="trend-indicator trend-${trend.direction}">
+        <span class="trend-label">Trend:</span>
+        <span class="trend-desc">${trend.description}</span>
+    </div>`;
 
     html += '</div>';
 
-    // Year-by-year breakdown
+    // Year-by-year breakdown with dollar amounts
     html += '<div class="year-breakdown">';
     html += '<h4>Year-by-Year Breakdown</h4>';
     curveWithStrategy.forEach(item => {
         const strategyClass = item.strategy ? item.strategy.toLowerCase().replace('_', '-') : 'none';
+        const millions = GameEngine.percentToMillions(item.payroll);
+        const hasDecision = item.strategy !== null;
         html += `
-            <div class="year-breakdown-item">
+            <div class="year-breakdown-item ${hasDecision ? 'decided' : 'pending'}">
                 <span class="year-label">Year ${item.year}:</span>
-                ${item.strategy ? `<span class="strategy-tag-small ${strategyClass}">${item.strategy}</span>` : ''}
-                <span class="payroll-value">${item.payroll}%</span>
+                ${item.strategy ? `<span class="strategy-tag-small ${strategyClass}">${item.strategy}</span>` : '<span class="strategy-tag-small tbd">TBD</span>'}
+                <span class="payroll-value">${item.payroll}% <span class="dollar-value">(${GameEngine.formatMoney(millions)})</span></span>
             </div>
         `;
     });
     html += '</div>';
 
+    // Strategy Comparison Widget
+    html += '<div class="strategy-comparison">';
+    html += '<h4>Strategy Comparison</h4>';
+
+    const pathNames = { winNow: 'Win-Now', hybrid: 'Hybrid', rebuild: 'Rebuild' };
+    const pathTagClasses = { winNow: 'spend-heavy', hybrid: 'competitive', rebuild: 'rebuild' };
+
+    Object.keys(recommendedPaths).forEach(pathKey => {
+        const recommended = recommendedPaths[pathKey];
+        const isActive = path === pathKey;
+
+        // Calculate similarity score (how close user curve is to this path)
+        let similarity = 0;
+        for (let i = 0; i < 5; i++) {
+            const diff = Math.abs(userCurve[i] - recommended[i]);
+            similarity += Math.max(0, 100 - diff * 2);
+        }
+        similarity = Math.round(similarity / 5);
+
+        html += `
+            <div class="comparison-row ${isActive ? 'active-path' : ''}">
+                <div class="comparison-header">
+                    <span class="strategy-tag-small ${pathTagClasses[pathKey]}">${pathNames[pathKey]}</span>
+                    <span class="similarity-badge">${similarity}% match</span>
+                </div>
+                <div class="comparison-bars">
+                    ${recommended.map((val, i) => {
+                        const userVal = userCurve[i];
+                        const matchClass = Math.abs(userVal - val) <= 10 ? 'match' : Math.abs(userVal - val) <= 20 ? 'close' : 'off';
+                        return `<div class="comparison-year">
+                            <div class="bar-container">
+                                <div class="bar recommended-bar" style="height: ${val * 0.6}px" title="Recommended: ${val}%"></div>
+                                <div class="bar user-bar" style="height: ${userVal * 0.6}px" title="Yours: ${userVal}%"></div>
+                            </div>
+                            <span class="bar-label ${matchClass}">Y${i + 1}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+
+    // Chart legend for threshold lines
+    html += '<div class="chart-threshold-legend">';
+    html += '<span class="threshold-item"><span class="threshold-line luxury-line"></span> Luxury Tax</span>';
+    html += '<span class="threshold-item"><span class="threshold-line floor-line"></span> Payroll Floor</span>';
+    html += '<span class="threshold-item"><span class="threshold-line cap-line"></span> Salary Cap (100%)</span>';
+    html += '</div>';
+
     infoPanel.innerHTML = html;
+}
+
+/**
+ * Show real-time feedback flash when a decision is selected
+ * @param {Object} decision - The selected decision
+ * @param {number} year - Current year
+ */
+function showDecisionFeedback(decision, year) {
+    // Remove any existing feedback
+    const existing = document.getElementById('decision-feedback-flash');
+    if (existing) existing.remove();
+
+    const strategy = decision.strategy;
+    if (!strategy) return;
+
+    const strategyClass = strategy.tag.toLowerCase().replace('_', '-');
+    const millions = GameEngine.percentToMillions(decision.payrollPercentage);
+
+    const feedbackEl = document.createElement('div');
+    feedbackEl.id = 'decision-feedback-flash';
+    feedbackEl.className = `decision-feedback-flash strategy-flash-${strategyClass}`;
+    feedbackEl.innerHTML = `
+        <div class="feedback-content">
+            <div class="feedback-tag"><span class="strategy-tag ${strategyClass}">${strategy.tag}</span></div>
+            <div class="feedback-title">Year ${year}: ${decision.title}</div>
+            <div class="feedback-impact">${decision.payrollPercentage}% of cap (${GameEngine.formatMoney(millions)})</div>
+            <div class="feedback-flavor">${strategy.flavor}</div>
+        </div>
+    `;
+
+    const chartSection = document.querySelector('.chart-section');
+    if (chartSection) {
+        chartSection.insertBefore(feedbackEl, chartSection.firstChild);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            feedbackEl.classList.add('visible');
+        });
+
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            feedbackEl.classList.remove('visible');
+            setTimeout(() => feedbackEl.remove(), 400);
+        }, 3000);
+    }
 }
 
 /**
